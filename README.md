@@ -10,5 +10,5 @@ Parser of one of the largest sites with proxies - gatherproxy.com.
 ### ChromeDriver 2.41
 http://chromedriver.chromium.org/downloads
 # Установка
-стандартная
-#### Для работы необходимо указать путь к chromedriver, валидную ссылку для прокси-чекера и раздел сайта gatherproxy.com, в репозитории есть пример под windows 
+Стандартная
+### Для работы необходимо указать путь к chromedriver, валидную ссылку для прокси-чекера и любой раздел сайта gatherproxy.com, в репозитории есть пример под Windows 
