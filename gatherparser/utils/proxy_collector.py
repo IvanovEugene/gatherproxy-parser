@@ -1,7 +1,7 @@
 # encoding: utf-8 #
-from src.utils.drivers import ChromeDriver, PhantomJSDriver
-from src.utils.proxy_validator import ProxyValidator
-from src.utils.proxy_parser import ProxyParser
+from ..utils.drivers import ChromeDriver, PhantomJSDriver
+from ..utils.proxy_validator import ProxyValidator
+from ..utils.proxy_parser import ProxyParser
 
 
 class ProxyCollector:
