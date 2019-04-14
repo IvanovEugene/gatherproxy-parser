@@ -1,13 +1,11 @@
 # encoding: utf-8 #
 import os
-import sys
-sys.path.insert(1, os.path.join("."))
-from src.utils.proxy_collector import ProxyCollector
+from gatherparser import ProxyCollector
 
 
 if __name__ == "__main__":
-    PAGE_COUNT = 5
     URL_TO_PARSE = "http://www.gatherproxy.com/proxylist/country/?c=Russia"
+    PAGE_COUNT = 5
     DRIVER_TYPE = "chrome"
 
     driver_kwargs = {
