@@ -4,7 +4,6 @@ from selenium import webdriver
 
 
 class AbstractDriver(ABC):
-
     @abstractmethod
     def get_driver(self):
         pass

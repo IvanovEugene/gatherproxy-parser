@@ -4,7 +4,6 @@ from requests import get, status_codes
 
 
 class ProxyValidator:
-
     def __init__(self, proxy_timeout, proxy_verification_link, n_jobs):
         self.proxy_verification_link = proxy_verification_link
         self.proxy_timeout = float(proxy_timeout)

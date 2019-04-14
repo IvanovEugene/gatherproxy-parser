@@ -1,8 +1,8 @@
 # encoding: utf-8 #
 import os
 import sys
-sys.path.insert(0, "src")
-from utility.proxy_collector import ProxyCollector
+sys.path.insert(1, "src")
+from utilis.proxy_collector import ProxyCollector
 
 
 if __name__ == "__main__":
