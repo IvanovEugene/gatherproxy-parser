@@ -1,7 +1,7 @@
 # encoding: utf-8 #
-from utilis.drivers import ChromeDriver, PhantomJSDriver
-from utilis.proxy_validator import ProxyValidator
-from utilis.proxy_parser import ProxyParser
+from src.utils.drivers import ChromeDriver, PhantomJSDriver
+from src.utils.proxy_validator import ProxyValidator
+from src.utils.proxy_parser import ProxyParser
 
 
 class ProxyCollector:
@@ -10,7 +10,7 @@ class ProxyCollector:
         "phantomjs": PhantomJSDriver
     }
 
-    def __init__(self, url_to_parse: str, page_count: str, driver_type: str,
+    def __init__(self, url_to_parse: str, page_count: int, driver_type: str,
                  driver_kwargs: dict, validator_kwargs: dict):
         driver_initializer = self.driver_classes[driver_type](**driver_kwargs)
         driver = driver_initializer.get_driver()
