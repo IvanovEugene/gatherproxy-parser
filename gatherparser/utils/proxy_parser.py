@@ -1,63 +1,77 @@
 # encoding: utf-8 #
 import re
 from bs4 import BeautifulSoup
+from ..logging import get_loggger
+from ..errors.proxy_parser import ProxyParserFetchError, ProxyParserDOMError
 
 
 class ProxyParser:
     def __init__(self, driver):
         self.driver = driver
+        self._logger = get_loggger(self.__class__.__name__)
 
-    def __get_show_full_list_button(self):
-        elements = self.driver.find_elements_by_tag_name(name="input")
-        if not elements:
-            return None
+    def _get_show_full_list_button(self):
+        BUTTON_SELECTOR = """input[type="submit"][value="Show Full List"][class="button"]"""
+        try:
+            button = self.driver.find_element_by_css_selector(BUTTON_SELECTOR)
+        except Exception as no_such_element_exc:
+            self._logger.error(str(no_such_element_exc))
+            raise ProxyParserDOMError('Button with value "Show Full List" not found')
+        self._logger.info('Button with value "Show Full List" found')
+        return button
 
-        for element in elements:
-            if (element.get_attribute("value") == "Show Full List" and
-                    element.get_attribute("class") == "button"):
-                return element
+    def _load_page_by_url(self, url: str):
+        try:
+            self.driver.get(url)
+        except Exception as get_exc:
+            self._logger.error(str(get_exc))
+            raise ProxyParserFetchError(f'Selenium unable to open page "{url}"')
+        self._logger.info(f'Selenium open page "{url}"')
 
-        return None
+    def _remove_status_box(self):
+        stats_box_element = self.driver.find_element_by_class_name(name="stats-box")
+        if not stats_box_element:
+            self._logger.error(f'Selenium unable to find element with classname "stats-box"')
+            raise ProxyParserDOMError(f'Selenium unable to find element with classname "stats-box"')
+        try:
+            self.driver.execute_script("arguments[0].remove();", stats_box_element)
+        except Exception as execute_exc:
+            self._logger.error(str(execute_exc))
+            raise ProxyParserDOMError('Error executing element with classname "stats-box" remove script')
+        self._logger.info(f'Selenium remove element with classname "stats-box"')
 
-    def __load_page_by_url(self, url: str):
-        self.driver.get(url)
+    def _click_show_full_list_button(self):
+        show_full_list_button = self._get_show_full_list_button()
+        try:
+            show_full_list_button.click()
+        except Exception as click_exc:
+            self._logger.error(str(click_exc))
+            raise ProxyParserDOMError('Selenium unable to click on "Show Full List" button')
+        self._logger.info('Selenium clicked on "Show Full List" button')
 
-    def __remove_status_box(self):
-        stats_box_element = self.driver.find_element_by_class_name(
-            name="stats-box")
+    def _open_full_list_page(self, url_to_open):
+        self._load_page_by_url(url=url_to_open)
+        self._remove_status_box()
+        self._click_show_full_list_button()
+        self._logger.info(f'Page {url_to_open} loading done.')
 
-        if stats_box_element:
-            self.driver.execute_script(
-                "arguments[0].remove();", stats_box_element)
-
-            return True
-        return False
-
-    def __click_show_full_list_button(self):
-        show_full_list_button = self.__get_show_full_list_button()
-        if not show_full_list_button:
-            return None
-        show_full_list_button.click()
-
-    def __open_full_list_page(self, url_to_open):
-        self.__load_page_by_url(url=url_to_open)
-        self.__remove_status_box()
-        if not self.__click_show_full_list_button():
-            return None
-
-    def __get_html_by_page_number(self, page_number):
-        self.driver.execute_script("gp.pageClick(%s);" % page_number)
+    def _get_html_by_page_number(self, page_number):
+        try:
+            self.driver.execute_script(f"gp.pageClick({page_number});")
+        except Exception as execute_exc:
+            self._logger.error(str(execute_exc))
+            raise ProxyParserFetchError(f'Selenium unable to open page with number "{page_number}"')
+        self._logger.info(f'Selenium open page with number "{page_number}"')
         return self.driver.page_source
 
-    def __get_proxies_from_page_html(self, page_html):
+    def _get_proxies_from_page_html(self, page_html):
         page_source_soup = BeautifulSoup(page_html, "lxml")
         collected_proxies = set()
-        table_lines = page_source_soup.select(
-            "#tblproxy")[0].tbody.find_all("tr")
-        for table_line in table_lines:
-            if len(table_line.find_all("td")) != 8:
+        table_rows = page_source_soup.select("#tblproxy")[0].tbody.find_all("tr")
+        for table_row in table_rows:
+            if len(table_row.find_all("td")) != 8:
                 continue
-            proxy_ip, proxy_port = table_line.find_all("td")[1:3]
+            proxy_ip, proxy_port = table_row.find_all("td")[1:3]
             proxy_ip = re.search(r"[\d\.]{2,}$", proxy_ip.text).group(0)
             proxy_port = re.search(r"[\d]{2,}$", proxy_port.text).group(0)
             proxy = ":".join((proxy_ip, proxy_port))
@@ -65,19 +79,23 @@ class ProxyParser:
 
         return collected_proxies
 
-    def __get_proxies_by_page_number(self, page_number):
-        page_html = self.__get_html_by_page_number(page_number=page_number)
-        proxies = self.__get_proxies_from_page_html(page_html=page_html)
+    def _get_proxies_by_page_number(self, page_number):
+        page_html = self._get_html_by_page_number(page_number=page_number)
+        try:
+            proxies = self._get_proxies_from_page_html(page_html=page_html)
+        except Exception as table_parse_exc:
+            self._logger.error(str(table_parse_exc))
+            raise ProxyParserDOMError("Table parse error - bad format")
 
+        self._logger.info(f'Table with proxies from page with number {page_number} parsed')
         return proxies
 
-    def get_pages_with_proxy(self, page_count: int, url_to_parse: str):
-        self.__open_full_list_page(url_to_open=url_to_parse)
+    def get_proxies_by_page_count(self, page_count: int, url_to_parse: str):
+        self._open_full_list_page(url_to_open=url_to_parse)
         parsed_proxy = set()
 
         for page_num in range(1, page_count + 1):
-            page_proxies = self.__get_proxies_by_page_number(
-                page_number=page_num)
+            page_proxies = self._get_proxies_by_page_number(page_number=page_num)
             if page_proxies:
                 parsed_proxy = set.union(parsed_proxy, page_proxies)
 
