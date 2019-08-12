@@ -53,7 +53,7 @@ class ProxyParser:
         self._load_page_by_url(url=url_to_open)
         self._remove_status_box()
         self._click_show_full_list_button()
-        self._logger.info(f'Page {url_to_open} loading done.')
+        self._logger.info(f'Page {url_to_open} loading done')
 
     def _get_html_by_page_number(self, page_number):
         try:
@@ -87,7 +87,7 @@ class ProxyParser:
             self._logger.error(str(table_parse_exc))
             raise ProxyParserDOMError("Table parse error - bad format")
 
-        self._logger.info(f'Table with proxies from page with number {page_number} parsed')
+        self._logger.info(f'Table with proxies from page with number "{page_number}" parsed')
         return proxies
 
     def get_proxies_by_page_count(self, page_count: int, url_to_parse: str):
