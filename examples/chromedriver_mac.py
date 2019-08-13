@@ -10,7 +10,7 @@ async def main():
     DRIVER_TYPE = "chrome"
 
     driver_kwargs = {
-        "driver_path": os.path.join("tools", "drivers", "chrome", "macOS", "chromedriver"),
+        "driver_path": os.path.join("..", "tools", "drivers", "chrome", "macOS", "chromedriver"),
         "page_load_timeout": 60
     }
     validator_kwargs = {
