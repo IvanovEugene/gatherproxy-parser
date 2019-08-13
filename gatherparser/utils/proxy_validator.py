@@ -1,52 +1,57 @@
-# encoding: utf-8 #
-from multiprocessing.dummy import Pool
-from requests import get, status_codes
+# encoding: utf-8
+import asyncio
+from aiohttp import ClientSession, ClientTimeout
+from ..logging import get_logger
+from ..errors.proxy_validator import ProxyValidatorWrongFormatError
 
 
 class ProxyValidator:
-    def __init__(self, proxy_timeout, proxy_verification_link, n_jobs):
-        self.proxy_verification_link = proxy_verification_link
-        self.proxy_timeout = float(proxy_timeout)
-        self.n_jobs = n_jobs
+    def __init__(self, proxy_timeout, proxy_verification_link):
+        self._proxy_verification_link = proxy_verification_link
+        self._proxy_timeout = proxy_timeout
+        self._logger = get_logger(self.__class__.__name__)
 
-    def __is_proxy_works(self, proxy: str):
-        if not proxy:
-            return False
-
-        try:
-            request_proxies = {"http": proxy, "https": proxy}
-            proxy_request = get(
-                url=self.proxy_verification_link, timeout=self.proxy_timeout,
-                proxies=request_proxies)
-            if proxy_request.status_code != status_codes.codes.ok:
-                return False
-            return proxy
-
-        except Exception as request_exception:
-            return False
-
-    @staticmethod
-    def __is_proxy_format_valid(proxy: str):
+    async def _validate_format(self, proxy: str):
         proxy = proxy.split(":")
         if len(proxy) != 2:
-            return False
+            self._logger.error(f"Unable to split proxy to IP and port: {proxy}")
+            raise ProxyValidatorWrongFormatError("Unable to split proxy to IP and port")
 
         ip, port = proxy
         if not (len(ip.split(".")) == 4 and port.isdigit()):
-            return False
+            self._logger.error(f"Bad proxy format: {proxy}")
+            raise ProxyValidatorWrongFormatError("Bad proxy format")
 
+        self._logger.debug(f"Proxy {ip}:{port} has the correct format")
+
+    async def _fetch_with_proxy(self, session: ClientSession, proxy: str):
+        async with session.get(url=self._proxy_verification_link, proxy=f"http://{proxy}") as response:
+            await response.raise_for_status()
+
+    async def _is_proxy_valid(self, session: ClientSession, proxy: str):
+        try:
+            await self._validate_format(proxy=proxy)
+        except ProxyValidatorWrongFormatError:
+            return False
+        except Exception as other_exc:
+            self._logger.error(f"Other proxy format validation error: {other_exc}")
+            return False
+        try:
+            await self._fetch_with_proxy(session=session, proxy=proxy)
+        except Exception as async_request_exc:
+            exception_class_name = async_request_exc.__class__.__name__
+            self._logger.debug(f"Broken proxy: {proxy}. Exception class: {exception_class_name}")
+            return False
+        self._logger.debug(f"Proxy {proxy} is valid")
         return True
 
-    def __is_proxy_valid(self, proxy: str):
-        if (self.__is_proxy_format_valid(proxy=proxy)
-                and self.__is_proxy_works(proxy=proxy)):
-            return True
+    async def _validate_proxies(self, proxies: set):
+        proxies = tuple(proxies)
+        async with ClientSession(timeout=ClientTimeout(total=self._proxy_timeout)) as session:
+            tasks = [self._is_proxy_valid(session=session, proxy=proxy) for proxy in proxies]
+            done, _ = await asyncio.wait(tasks)
+        done = tuple(done)
+        return set([proxies[i] for i in range(len(proxies)) if done[i]])
 
-    def get_available_proxies(self, proxies_to_check):
-        pool = Pool(self.n_jobs)
-        results = zip(proxies_to_check,
-                      pool.map(self.__is_proxy_valid, proxies_to_check))
-        pool.close()
-        pool.join()
-
-        return {proxy for proxy, is_valid in results if is_valid}
+    async def get_available_proxies(self, proxies_to_check: set):
+        return await self._validate_proxies(proxies=proxies_to_check)
