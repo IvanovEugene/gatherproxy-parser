@@ -1,19 +1,19 @@
 # encoding: utf-8 #
 import re
 from bs4 import BeautifulSoup
-from ..logging import get_loggger
+from ..logging import get_logger
 from ..errors.proxy_parser import ProxyParserFetchError, ProxyParserDOMError
 
 
 class ProxyParser:
     def __init__(self, driver):
-        self.driver = driver
-        self._logger = get_loggger(self.__class__.__name__)
+        self._driver = driver
+        self._logger = get_logger(self.__class__.__name__)
 
     def _get_show_full_list_button(self):
         BUTTON_SELECTOR = """input[type="submit"][value="Show Full List"][class="button"]"""
         try:
-            button = self.driver.find_element_by_css_selector(BUTTON_SELECTOR)
+            button = self._driver.find_element_by_css_selector(BUTTON_SELECTOR)
         except Exception as no_such_element_exc:
             self._logger.error(str(no_such_element_exc))
             raise ProxyParserDOMError('Button with value "Show Full List" not found')
@@ -22,19 +22,19 @@ class ProxyParser:
 
     def _load_page_by_url(self, url: str):
         try:
-            self.driver.get(url)
+            self._driver.get(url)
         except Exception as get_exc:
             self._logger.error(str(get_exc))
             raise ProxyParserFetchError(f'Selenium unable to open page "{url}"')
         self._logger.info(f'Selenium open page "{url}"')
 
     def _remove_status_box(self):
-        stats_box_element = self.driver.find_element_by_class_name(name="stats-box")
+        stats_box_element = self._driver.find_element_by_class_name(name="stats-box")
         if not stats_box_element:
             self._logger.error(f'Selenium unable to find element with classname "stats-box"')
             raise ProxyParserDOMError(f'Selenium unable to find element with classname "stats-box"')
         try:
-            self.driver.execute_script("arguments[0].remove();", stats_box_element)
+            self._driver.execute_script("arguments[0].remove();", stats_box_element)
         except Exception as execute_exc:
             self._logger.error(str(execute_exc))
             raise ProxyParserDOMError('Error executing element with classname "stats-box" remove script')
@@ -57,12 +57,12 @@ class ProxyParser:
 
     def _get_html_by_page_number(self, page_number):
         try:
-            self.driver.execute_script(f"gp.pageClick({page_number});")
+            self._driver.execute_script(f"gp.pageClick({page_number});")
         except Exception as execute_exc:
             self._logger.error(str(execute_exc))
             raise ProxyParserFetchError(f'Selenium unable to open page with number "{page_number}"')
         self._logger.info(f'Selenium open page with number "{page_number}"')
-        return self.driver.page_source
+        return self._driver.page_source
 
     def _get_proxies_from_page_html(self, page_html):
         page_source_soup = BeautifulSoup(page_html, "lxml")
@@ -99,5 +99,5 @@ class ProxyParser:
             if page_proxies:
                 parsed_proxy = set.union(parsed_proxy, page_proxies)
 
-        self.driver.close()
+        self._driver.close()
         return parsed_proxy
