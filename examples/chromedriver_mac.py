@@ -10,7 +10,7 @@ async def main():
     DRIVER_TYPE = "chrome"
 
     driver_kwargs = {
-        "driver_path": os.path.join("..", "tools", "drivers", "chrome", "macOS", "chromedriver"),
+        "driver_path": "path_to_chromedriver",
         "page_load_timeout": 60
     }
     validator_kwargs = {
@@ -33,7 +33,7 @@ async def main():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    loop_result = loop.run_until_complete(asyncio.gather(main()))
+    loop_result = loop.run_until_complete(asyncio.gather(main()))[0]
     loop.close()
 
     print(loop_result)
