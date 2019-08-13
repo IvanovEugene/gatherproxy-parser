@@ -1,7 +1,8 @@
-# encoding: utf-8 #
+# encoding: utf-8
 from ..utils.drivers import ChromeDriver, PhantomJSDriver
 from ..utils.proxy_validator import ProxyValidator
 from ..utils.proxy_parser import ProxyParser
+from ..logging import get_logger
 
 
 class ProxyCollector:
@@ -14,14 +15,16 @@ class ProxyCollector:
                  driver_kwargs: dict, validator_kwargs: dict):
         driver_initializer = self.driver_classes[driver_type](**driver_kwargs)
         driver = driver_initializer.get_driver()
-        self.proxy_parser = ProxyParser(driver=driver)
-        self.proxy_validator = ProxyValidator(**validator_kwargs)
-        self.url_to_parse = url_to_parse
-        self.page_count = page_count
+        self._proxy_parser = ProxyParser(driver=driver)
+        self._proxy_validator = ProxyValidator(**validator_kwargs)
+        self._url_to_parse = url_to_parse
+        self._page_count = page_count
+        self._logger = get_logger(self.__class__.__name__)
 
-    def collect_proxies(self):
-        proxies = self.proxy_parser.get_pages_with_proxy(
-            page_count=self.page_count, url_to_parse=self.url_to_parse)
-        valid_proxies = self.proxy_validator.get_available_proxies(
-            proxies_to_check=proxies)
+    async def collect_proxies(self):
+        proxies = self._proxy_parser.get_proxies_by_page_count(
+            page_count=self._page_count, url_to_parse=self._url_to_parse)
+        self._logger.info("Proxies collected. Starting to validate")
+        valid_proxies = await self._proxy_validator.get_available_proxies(proxies_to_check=proxies)
+        self._logger.info("Proxies validated")
         return valid_proxies
