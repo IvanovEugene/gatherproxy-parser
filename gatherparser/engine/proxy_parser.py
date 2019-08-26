@@ -17,7 +17,7 @@ class ProxyParser:
         except Exception as no_such_element_exc:
             self._logger.error(str(no_such_element_exc))
             raise ProxyParserDOMError('Button with value "Show Full List" not found')
-        self._logger.info('Button with value "Show Full List" found')
+        self._logger.debug('Button with value "Show Full List" found')
         return button
 
     def _load_page_by_url(self, url: str):
@@ -26,7 +26,7 @@ class ProxyParser:
         except Exception as get_exc:
             self._logger.error(str(get_exc))
             raise ProxyParserFetchError(f'Selenium unable to open page "{url}"')
-        self._logger.info(f'Selenium open page "{url}"')
+        self._logger.debug(f'Selenium open page "{url}"')
 
     def _remove_status_box(self):
         stats_box_element = self._driver.find_element_by_class_name(name="stats-box")
@@ -38,7 +38,7 @@ class ProxyParser:
         except Exception as execute_exc:
             self._logger.error(str(execute_exc))
             raise ProxyParserDOMError('Error executing element with classname "stats-box" remove script')
-        self._logger.info(f'Selenium remove element with classname "stats-box"')
+        self._logger.debug(f'Selenium remove element with classname "stats-box"')
 
     def _click_show_full_list_button(self):
         show_full_list_button = self._get_show_full_list_button()
@@ -47,13 +47,13 @@ class ProxyParser:
         except Exception as click_exc:
             self._logger.error(str(click_exc))
             raise ProxyParserDOMError('Selenium unable to click on "Show Full List" button')
-        self._logger.info('Selenium clicked on "Show Full List" button')
+        self._logger.debug('Selenium clicked on "Show Full List" button')
 
     def _open_full_list_page(self, url_to_open):
         self._load_page_by_url(url=url_to_open)
         self._remove_status_box()
         self._click_show_full_list_button()
-        self._logger.info(f'Page {url_to_open} loading done')
+        self._logger.debug(f'Page {url_to_open} loading done')
 
     def _get_html_by_page_number(self, page_number):
         try:
@@ -61,7 +61,7 @@ class ProxyParser:
         except Exception as execute_exc:
             self._logger.error(str(execute_exc))
             raise ProxyParserFetchError(f'Selenium unable to open page with number "{page_number}"')
-        self._logger.info(f'Selenium open page with number "{page_number}"')
+        self._logger.debug(f'Selenium open page with number "{page_number}"')
         return self._driver.page_source
 
     def _get_proxies_from_page_html(self, page_html):
