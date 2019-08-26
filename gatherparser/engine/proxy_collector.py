@@ -1,8 +1,8 @@
 # encoding: utf-8
-from ..utils.drivers import ChromeDriver
-from ..utils.proxy_validator import ProxyValidator
-from ..utils.proxy_parser import ProxyParser
-from ..logging import get_logger
+from ..engine.drivers import ChromeDriver
+from ..engine.proxy_validator import ProxyValidator
+from ..engine.proxy_parser import ProxyParser
+from ..logging import Logging
 
 
 class ProxyCollector:
@@ -18,7 +18,7 @@ class ProxyCollector:
         self._proxy_validator = ProxyValidator(**validator_kwargs)
         self._url_to_parse = url_to_parse
         self._page_count = page_count
-        self._logger = get_logger(self.__class__.__name__)
+        self._logger = Logging.get_logger(__name__)
 
     async def collect_proxies(self):
         proxies = self._proxy_parser.get_proxies_by_page_count(

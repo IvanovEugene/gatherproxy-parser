@@ -1,15 +1,15 @@
 # encoding: utf-8
 import asyncio
 from aiohttp import ClientSession, ClientTimeout
-from ..logging import get_logger
-from ..errors.proxy_validator import ProxyValidatorWrongFormatError
+from ..logging import Logging
+from gatherparser.utils.exceptions import ProxyValidatorWrongFormatError
 
 
 class ProxyValidator:
     def __init__(self, proxy_timeout, proxy_verification_link):
         self._proxy_verification_link = proxy_verification_link
         self._proxy_timeout = proxy_timeout
-        self._logger = get_logger(self.__class__.__name__)
+        self._logger = Logging.get_logger(__name__)
 
     async def _validate_format(self, proxy: str):
         proxy = proxy.split(":")
