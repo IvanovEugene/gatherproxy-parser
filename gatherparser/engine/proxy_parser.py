@@ -1,7 +1,7 @@
 # encoding: utf-8 #
 import re
 from bs4 import BeautifulSoup
-from ..logging import Logging
+from gatherparser.utils.logging import Logging
 from gatherparser.utils.exceptions.proxy_parser import ProxyParserFetchError, ProxyParserDOMError
 
 

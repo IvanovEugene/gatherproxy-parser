@@ -2,7 +2,7 @@
 from ..engine.drivers import ChromeDriver
 from ..engine.proxy_validator import ProxyValidator
 from ..engine.proxy_parser import ProxyParser
-from ..logging import Logging
+from gatherparser.utils.logging import Logging
 
 
 class ProxyCollector:

@@ -1,7 +1,7 @@
 # encoding: utf-8
 import asyncio
 from aiohttp import ClientSession, ClientTimeout
-from ..logging import Logging
+from gatherparser.utils.logging import Logging
 from gatherparser.utils.exceptions import ProxyValidatorWrongFormatError
 
 
