@@ -1,3 +1,3 @@
-from .utils.proxy_collector import ProxyCollector
-from .utils.proxy_parser import ProxyParser
-from .utils.proxy_validator import ProxyValidator
+from .engine.proxy_collector import ProxyCollector
+from .engine.proxy_parser import ProxyParser
+from .engine.proxy_validator import ProxyValidator

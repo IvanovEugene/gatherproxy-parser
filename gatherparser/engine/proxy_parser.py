@@ -1,14 +1,14 @@
 # encoding: utf-8 #
 import re
 from bs4 import BeautifulSoup
-from ..logging import get_logger
-from ..errors.proxy_parser import ProxyParserFetchError, ProxyParserDOMError
+from gatherparser.utils.logging import Logging
+from gatherparser.utils.exceptions.proxy_parser import ProxyParserFetchError, ProxyParserDOMError
 
 
 class ProxyParser:
     def __init__(self, driver):
         self._driver = driver
-        self._logger = get_logger(self.__class__.__name__)
+        self._logger = Logging.get_logger(__name__)
 
     def _get_show_full_list_button(self):
         BUTTON_SELECTOR = """input[type="submit"][value="Show Full List"][class="button"]"""
