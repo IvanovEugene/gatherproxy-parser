@@ -24,6 +24,7 @@ class ProxyCollector:
         proxies = self._proxy_parser.get_proxies_by_page_count(
             page_count=self._page_count, url_to_parse=self._url_to_parse)
         self._logger.info("Proxies collected. Starting to validate")
-        valid_proxies = await self._proxy_validator.get_available_proxies(proxies_to_check=proxies)
+        valid_proxies = await self._proxy_validator.get_available_proxies(
+            proxies_to_check=proxies)
         self._logger.info("Proxies validated")
         return valid_proxies

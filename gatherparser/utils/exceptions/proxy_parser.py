@@ -10,5 +10,6 @@ class ProxyParserFetchError(ProxyParserException):
 
 
 class ProxyParserDOMError(ProxyParserException):
-    """Raised when Selenium unable to find required element in Document Object Model"""
+    """Raised when Selenium unable to find
+    required element in Document Object Model"""
     pass

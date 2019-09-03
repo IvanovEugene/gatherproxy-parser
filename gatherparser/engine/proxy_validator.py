@@ -15,7 +15,8 @@ class ProxyValidator:
         proxy = proxy.split(":")
         if len(proxy) != 2:
             self._logger.error(f"Unable to split proxy to IP and port: {proxy}")
-            raise ProxyValidatorWrongFormatError("Unable to split proxy to IP and port")
+            raise ProxyValidatorWrongFormatError("Unable to split proxy "
+                                                 "to IP and port")
 
         ip, port = proxy
         if not (len(ip.split(".")) == 4 and port.isdigit()):
@@ -25,7 +26,8 @@ class ProxyValidator:
         self._logger.debug(f"Proxy {ip}:{port} has the correct format")
 
     async def _fetch_with_proxy(self, session: ClientSession, proxy: str):
-        async with session.get(url=self._proxy_verification_link, proxy=f"http://{proxy}") as response:
+        async with session.get(url=self._proxy_verification_link,
+                               proxy=f"http://{proxy}") as response:
             await response.raise_for_status()
 
     async def _is_proxy_valid(self, session: ClientSession, proxy: str):
@@ -34,21 +36,26 @@ class ProxyValidator:
         except ProxyValidatorWrongFormatError:
             return False
         except Exception as other_exc:
-            self._logger.error(f"Other proxy format validation error: {other_exc}")
+            self._logger.error(f"Other proxy format validation error: "
+                               f"{other_exc}")
             return False
         try:
             await self._fetch_with_proxy(session=session, proxy=proxy)
         except Exception as async_request_exc:
             exception_class_name = async_request_exc.__class__.__name__
-            self._logger.debug(f"Broken proxy: {proxy}. Exception class: {exception_class_name}")
+            self._logger.debug(f"Broken proxy: {proxy}. Exception class: "
+                               f"{exception_class_name}")
             return False
         self._logger.debug(f"Proxy {proxy} is valid")
         return True
 
     async def _validate_proxies(self, proxies: set):
         proxies = tuple(proxies)
-        async with ClientSession(timeout=ClientTimeout(total=self._proxy_timeout)) as session:
-            tasks = [self._is_proxy_valid(session=session, proxy=proxy) for proxy in proxies]
+        async with ClientSession(
+                timeout=ClientTimeout(total=self._proxy_timeout)
+        ) as session:
+            tasks = [self._is_proxy_valid(session=session, proxy=proxy)
+                     for proxy in proxies]
             done, _ = await asyncio.wait(tasks)
         done = tuple(done)
         return set([proxies[i] for i in range(len(proxies)) if done[i]])
