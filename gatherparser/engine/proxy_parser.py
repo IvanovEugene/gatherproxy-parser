@@ -2,7 +2,8 @@
 import re
 from bs4 import BeautifulSoup
 from gatherparser.utils.logging import Logging
-from gatherparser.utils.exceptions.proxy_parser import ProxyParserFetchError, ProxyParserDOMError
+from gatherparser.utils.exceptions.proxy_parser import (ProxyParserFetchError,
+                                                        ProxyParserDOMError)
 
 
 class ProxyParser:
@@ -11,8 +12,9 @@ class ProxyParser:
         self._logger = Logging.get_logger(__name__)
 
     def _get_show_full_list_button(self):
-        BUTTON_SELECTOR = """input[type="submit"][value="Show Full List"]
-        [class="button"]"""
+        BUTTON_SELECTOR = """
+        input[type="submit"][value="Show Full List"][class="button"]
+        """.strip()
         try:
             button = self._driver.find_element_by_css_selector(BUTTON_SELECTOR)
         except Exception as no_such_element_exc:
