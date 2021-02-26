@@ -10,7 +10,7 @@ setup(
                       'requests==2.22.0',
                       'beautifulsoup4==4.6.3',
                       'lxml==4.3.4',
-                      'aiohttp==3.5.4',
+                      'aiohttp==3.7.4',
                       'asyncio==3.4.3',
                       'aiodns==2.0.0'
                       ],
